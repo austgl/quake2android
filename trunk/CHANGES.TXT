@@ -1,5 +1,5 @@
 
-CHANGELIST 1.8 :
+changelist 1.8 :
 - corrected crash in video menu 
 - extract players directory from demo file 
 - fixed download bug 
