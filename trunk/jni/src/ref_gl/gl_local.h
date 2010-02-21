@@ -27,7 +27,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <ctype.h>
 
+#ifdef ANDROID
+#include "../android/gl.h"
+#define GL_TEXTURE0_ARB GL_TEXTURE0
+#define GL_TEXTURE1_ARB GL_TEXTURE1      
+#else
 #include <GL/gl.h>
+#endif
+
+
 #ifdef SOLARIS
 #include <GL/glu.h>
 #else

@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MAX_NUM_ARGVS	50
 
+#define DEBUG_MALLOC 0
 
 int		com_argc;
 char	*com_argv[MAX_NUM_ARGVS+1];
@@ -1157,6 +1158,11 @@ void Z_Free (void *ptr)
 
 	z_count--;
 	z_bytes -= z->size;
+
+#if DEBUG_MALLOC >= 2
+	Com_Printf ("Z_Free size=%d total=%d\n", z->size, z_bytes  );
+#endif
+
 	free (z);
 }
 
@@ -1193,6 +1199,9 @@ void Z_FreeTags (int tag)
 Z_TagMalloc
 ========================
 */
+
+static int z_max_megabytes = 0;
+
 void *Z_TagMalloc (int size, int tag)
 {
 	zhead_t	*z;
@@ -1212,6 +1221,18 @@ void *Z_TagMalloc (int size, int tag)
 	z->prev = &z_chain;
 	z_chain.next->prev = z;
 	z_chain.next = z;
+
+#if DEBUG_MALLOC >= 2
+	Com_Printf ("Z_TagMalloc size=%d total=%d\n", z->size, z_bytes  );
+#endif
+
+#if DEBUG_MALLOC
+	// maximum malloc usage
+	if ( (z_bytes>>20) > z_max_megabytes ){
+		 z_max_megabytes = (z_bytes>>20);
+		 Com_Printf ("malloc max : %d MB\n", z_max_megabytes  );
+	}
+#endif
 
 	/*	printf( "returning pointer: %p\n", (z+1) );*/
 	return (void *)(z+1);

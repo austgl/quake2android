@@ -187,7 +187,9 @@ void VID_FreeReflib (void)
 			KBD_Close_fp();
 		if (RW_IN_Shutdown_fp)
 			RW_IN_Shutdown_fp();
+#ifndef ANDROID
 		dlclose(reflib_library);
+#endif
 	}
 
 	KBD_Init_fp = NULL;
@@ -271,12 +273,13 @@ qboolean VID_LoadRefresh( char *name )
 		setegid(getgid());
 	}
 
+#ifndef ANDROID
 	if ( ( reflib_library = dlopen( fn, RTLD_LAZY ) ) == 0 )
 	{
 		Com_Printf( "LoadLibrary(\"%s\") failed: %s\n", name , dlerror());
 		return false;
 	}
-
+#endif
 	Com_Printf( "LoadLibrary(\"%s\")\n", fn );
 
 	ri.Cmd_AddCommand = Cmd_AddCommand;
@@ -300,8 +303,12 @@ qboolean VID_LoadRefresh( char *name )
 	ri.SetParticlePics = SetParticleImages;
 	#endif
 
+#ifdef ANDROID
+
+#else
 	if ( ( GetRefAPI = (void *) dlsym( reflib_library, "GetRefAPI" ) ) == 0 )
 		Com_Error( ERR_FATAL, "dlsym failed on %s", name );
+#endif
 
 	re = GetRefAPI( ri );
 
@@ -318,6 +325,25 @@ qboolean VID_LoadRefresh( char *name )
 	in_state.in_strafe_state = &in_strafe.state;
 	in_state.in_speed_state = &in_speed.state;
 
+#ifdef ANDROID
+	// hard link
+	{
+		void (RW_IN_Init)(in_state_t *in_state_p);
+		void (RW_IN_Shutdown)(void);
+		void (RW_IN_Activate)(qboolean active);
+		void (RW_IN_Commands)(void);
+		void (RW_IN_Move)(usercmd_t *cmd);
+		void (RW_IN_Frame)(void);
+
+		RW_IN_Init_fp = RW_IN_Init;
+		RW_IN_Shutdown_fp = RW_IN_Shutdown;
+		RW_IN_Activate_fp = RW_IN_Activate;
+		RW_IN_Commands_fp = RW_IN_Commands;
+		RW_IN_Move_fp = RW_IN_Move;
+		RW_IN_Frame_fp = RW_IN_Frame;
+		RW_Sys_GetClipboardData_fp = NULL;
+	}
+#else
 	if ((RW_IN_Init_fp = dlsym(reflib_library, "RW_IN_Init")) == NULL ||
 		(RW_IN_Shutdown_fp = dlsym(reflib_library, "RW_IN_Shutdown")) == NULL ||
 		(RW_IN_Activate_fp = dlsym(reflib_library, "RW_IN_Activate")) == NULL ||
@@ -328,6 +354,7 @@ qboolean VID_LoadRefresh( char *name )
 
 	/* this one is optional */
 	RW_Sys_GetClipboardData_fp = dlsym(reflib_library, "RW_Sys_GetClipboardData");
+#endif
 	
 	Real_IN_Init();
 
@@ -339,14 +366,14 @@ qboolean VID_LoadRefresh( char *name )
 	}
 
 	/* Init KBD */
-#if 1
+#ifndef ANDROID
 	if ((KBD_Init_fp = dlsym(reflib_library, "KBD_Init")) == NULL ||
 		(KBD_Update_fp = dlsym(reflib_library, "KBD_Update")) == NULL ||
 		(KBD_Close_fp = dlsym(reflib_library, "KBD_Close")) == NULL)
 		Sys_Error("No KBD functions in REF.\n");
 #else
 	{
-		void KBD_Init(void);
+		void KBD_Init(Key_Event_fp_t fp);
 		void KBD_Update(void);
 		void KBD_Close(void);
 

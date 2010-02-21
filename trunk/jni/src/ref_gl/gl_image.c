@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "gl_local.h"
 
+#define DEBUG_IMAGE	0
+
 image_t		gltextures[MAX_GLTEXTURES];
 int			numgltextures;
 int			base_textureid;		// gltextures[i] = base_textureid+i
@@ -1424,6 +1426,10 @@ image_t	*GL_FindImage (char *name, imagetype_t type)
 	//
 	// load the pic from disk
 	//
+#if DEBUG_IMAGE	
+	ri.Con_Printf (PRINT_ALL, "loading : %s\n", name);
+#endif
+	
 	pic = NULL;
 	palette = NULL;
 	if (!strcmp(name+len-4, ".pcx"))

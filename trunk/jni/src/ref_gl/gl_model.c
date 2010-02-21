@@ -21,6 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "gl_local.h"
 
+
+#define DEBUG_MODEL 0
+
 model_t	*loadmodel;
 int		modfilelen;
 
@@ -179,7 +182,11 @@ model_t *Mod_ForName (char *name, qboolean crash)
 	model_t	*mod;
 	unsigned *buf;
 	int		i;
-	
+
+#if DEBUG_MODEL >= 2
+	ri.Con_Printf (PRINT_ALL,"Mod_ForName %s\n", name);
+#endif
+
 	if (!name[0])
 		ri.Sys_Error (ERR_DROP, "Mod_ForName: NULL name");
 		
@@ -289,6 +296,9 @@ Mod_LoadLighting
 */
 void Mod_LoadLighting (lump_t *l)
 {
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadLighting\n");
+#endif
 	if (!l->filelen)
 	{
 		loadmodel->lightdata = NULL;
@@ -307,6 +317,9 @@ Mod_LoadVisibility
 void Mod_LoadVisibility (lump_t *l)
 {
 	int		i;
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadVisibility\n");
+#endif
 
 	if (!l->filelen)
 	{
@@ -335,6 +348,10 @@ void Mod_LoadVertexes (lump_t *l)
 	dvertex_t	*in;
 	mvertex_t	*out;
 	int			i, count;
+	
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadVertexes\n");
+#endif
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -382,6 +399,10 @@ void Mod_LoadSubmodels (lump_t *l)
 	dmodel_t	*in;
 	mmodel_t	*out;
 	int			i, j, count;
+	
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadSubmodels\n");
+#endif
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -417,6 +438,10 @@ void Mod_LoadEdges (lump_t *l)
 	dedge_t *in;
 	medge_t *out;
 	int 	i, count;
+	
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadEdges\n");
+#endif
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -446,6 +471,10 @@ void Mod_LoadTexinfo (lump_t *l)
 	int 	i, j, count;
 	char	name[MAX_QPATH];
 	int		next;
+
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadTexinfo\n");
+#endif
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -564,6 +593,11 @@ void Mod_LoadFaces (lump_t *l)
 	if (l->filelen % sizeof(*in))
 		ri.Sys_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
 	count = l->filelen / sizeof(*in);
+	
+#if DEBUG_MODEL	
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadFaces %d\n", count);
+#endif	
+
 	out = Hunk_Alloc ( count*sizeof(*out));	
 
 	loadmodel->surfaces = out;
@@ -655,6 +689,10 @@ void Mod_LoadNodes (lump_t *l)
 	dnode_t		*in;
 	mnode_t 	*out;
 
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadNodes\n");
+#endif
+
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri.Sys_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
@@ -703,6 +741,10 @@ void Mod_LoadLeafs (lump_t *l)
 	mleaf_t 	*out;
 	int			i, j, count, p;
 //	glpoly_t	*poly;
+
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadLeafs\n");
+#endif
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -756,7 +798,11 @@ void Mod_LoadMarksurfaces (lump_t *l)
 	int		i, j, count;
 	short		*in;
 	msurface_t **out;
-	
+
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadMarksurfaces\n");
+#endif
+
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri.Sys_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
@@ -784,7 +830,11 @@ void Mod_LoadSurfedges (lump_t *l)
 {	
 	int		i, count;
 	int		*in, *out;
-	
+
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadSurfedges\n");
+#endif
+
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri.Sys_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
@@ -820,6 +870,11 @@ void Mod_LoadPlanes (lump_t *l)
 	if (l->filelen % sizeof(*in))
 		ri.Sys_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
 	count = l->filelen / sizeof(*in);
+
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadPlanes %d\n", count);
+#endif
+
 	out = Hunk_Alloc ( count*2*sizeof(*out));	
 	
 	loadmodel->planes = out;
@@ -851,7 +906,11 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	int			i;
 	dheader_t	*header;
 	mmodel_t 	*bm;
-	
+
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadBrushModel\n");
+#endif
+
 	loadmodel->type = mod_brush;
 	if (loadmodel != mod_known)
 		ri.Sys_Error (ERR_DROP, "Loaded a brush model after the world");
@@ -935,6 +994,10 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	daliasframe_t		*pinframe, *poutframe;
 	int					*pincmd, *poutcmd;
 	int					version;
+
+#if DEBUG_MODEL >= 2
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadAliasModel\n");
+#endif
 
 	pinmodel = (dmdl_t *)buffer;
 
@@ -1063,6 +1126,10 @@ void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 	dsprite_t	*sprin, *sprout;
 	int			i;
 
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"Mod_LoadSpriteModel\n");
+#endif
+
 	sprin = (dsprite_t *)buffer;
 	sprout = Hunk_Alloc (modfilelen);
 
@@ -1107,6 +1174,10 @@ void R_BeginRegistration (char *model)
 	char	fullname[MAX_QPATH];
 	cvar_t	*flushmap;
 
+#if DEBUG_MODEL
+	ri.Con_Printf (PRINT_ALL,"R_BeginRegistration %s\n", model);
+#endif
+
 	registration_sequence++;
 	r_oldviewcluster = -1;		// force markleafs
 
@@ -1135,6 +1206,10 @@ struct model_s *R_RegisterModel (char *name)
 	int		i;
 	dsprite_t	*sprout;
 	dmdl_t		*pheader;
+
+#if DEBUG_MODEL >= 2
+	ri.Con_Printf (PRINT_ALL,"R_RegisterModel %s\n", name);
+#endif
 
 	mod = Mod_ForName (name, false);
 	if (mod)

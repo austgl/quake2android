@@ -12,7 +12,11 @@ are present on this system
 */
 
 /* this will have to be updated if ref's are added/removed from ref_t */
+#ifdef ANDROID
+#define NUMBER_OF_REFS 1
+#else
 #define NUMBER_OF_REFS 5
+#endif
 
 /* all the refs should be initially set to 0 */
 static char *refs[NUMBER_OF_REFS+1] = { 0 };
@@ -24,6 +28,9 @@ static int REF_SOFTSDL = NUMBER_OF_REFS;
 static int REF_GLX     = NUMBER_OF_REFS;
 static int REF_SDLGL   = NUMBER_OF_REFS;
 //static int REF_FXGL    = NUMBER_OF_REFS;
+#ifdef ANDROID
+static int REF_ANDROID = NUMBER_OF_REFS;
+#endif
 
 static int GL_REF_START = NUMBER_OF_REFS;
 
@@ -36,11 +43,15 @@ typedef struct
 
 static const ref_t possible_refs[NUMBER_OF_REFS] =
 {
+#ifdef ANDROID
+	{ "[android       ]", "android", &REF_ANDROID    },		
+#else
 	{ "[software      ]", "soft",    &REF_SOFT    },
 	{ "[software X11  ]", "softx",   &REF_SOFTX11 },
 	{ "[software SDL  ]", "softsdl", &REF_SOFTSDL },
 	{ "[OpenGL GLX    ]", "glx",     &REF_GLX     },
 	{ "[SDL OpenGL    ]", "sdlgl",   &REF_SDLGL   }
+#endif
 };
 
 /*
@@ -276,7 +287,10 @@ void VID_MenuInit( void )
 	REF_GLX     = NUMBER_OF_REFS;
 	REF_SDLGL   = NUMBER_OF_REFS;
 	//REF_FXGL    = NUMBER_OF_REFS;
-
+#ifdef ANDROID
+	REF_ANDROID = NUMBER_OF_REFS;	
+#endif
+	
 	GL_REF_START = NUMBER_OF_REFS;
 
 	/* now test to see which ref's are present */
@@ -305,6 +319,10 @@ void VID_MenuInit( void )
 		i++;
 	}
 	refs[counter] = (char*) 0;
+	
+#ifdef ANDROID
+	GL_REF_START = 0;
+#endif
 
 	if ( !gl_driver )
 		gl_driver = Cvar_Get( "gl_driver", "libGL.so", 0 );
@@ -377,7 +395,14 @@ void VID_MenuInit( void )
 			s_ref_list[s_current_menu_index].curvalue = REF_VERITE;
 #endif
 	}
-
+#ifdef ANDROID
+	else if ( strcmp( vid_ref->string, "android" ) == 0 )
+	{
+		s_current_menu_index = OPENGL_MENU;
+		s_ref_list[s_current_menu_index].curvalue = REF_ANDROID;
+	}
+#endif
+	
 	s_software_menu.x = viddef.width * 0.50;
 	s_software_menu.nitems = 0;
 	s_opengl_menu.x = viddef.width * 0.50;

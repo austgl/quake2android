@@ -26,6 +26,8 @@ int			cache_full_cycle;
 
 byte *S_Alloc (int size);
 
+#define DEBUG_AUDIO 0
+
 /*
 ================
 ResampleSfx
@@ -52,23 +54,43 @@ void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, byte *data)
 		sc->loopstart = sc->loopstart / stepscale;
 
 	sc->speed = dma.speed;
+	// moved in S_LoadSound
+	/*
 	if (s_loadas8bit->value)
 		sc->width = 1;
 	else
 		sc->width = inwidth;
+	*/
 	sc->stereo = 0;
 
 // resample / decimate to the current source rate
 
 	if (stepscale == 1 && inwidth == 1 && sc->width == 1)
 	{
+#if DEBUG_AUDIO
+	Com_Printf ("ResampleSfx : fast case 1\n" );
+#endif
 // fast special case
 		for (i=0 ; i<outcount ; i++)
 			((signed char *)sc->data)[i]
 			= (int)( (unsigned char)(data[i]) - 128);
 	}
+	else if (stepscale == 1 && inwidth == 2 && sc->width == 1  )
+	{
+#if DEBUG_AUDIO
+	Com_Printf ("ResampleSfx : fast case 2\n" );
+#endif
+// fast special case : used for android on arm processor
+		for (i=0 ; i<outcount ; i++)
+			((signed char *)sc->data)[i]
+			= ( (signed char)(data[2*i+1]) );
+	}
 	else
 	{
+#if DEBUG_AUDIO
+	Com_Printf ("ResampleSfx : stepscale=%.1f inwidth=%d outwidth=%d\n",
+			stepscale, inwidth, sc->width  );
+#endif
 // general case
 		samplefrac = 0;
 		fracstep = stepscale*256;
@@ -144,10 +166,24 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 		return NULL;
 	}
 
+	// jeyries : test, do not force 8 bit
+	//s_loadas8bit->value = 0;
+
 	stepscale = (float)info.rate / dma.speed;	
 	len = info.samples / stepscale;
 
-	len = len * info.width * info.channels;
+	// moved here to save sound memory
+	if (s_loadas8bit->value)
+		len = len * 1 * info.channels;
+	else
+		len = len * info.width * info.channels;
+
+
+#if DEBUG_AUDIO
+	Com_Printf ("loading %s : samples=%d width=%d rate=%d channels=%d memsize=%d\n",
+			namebuffer, info.samples, info.width, info.rate, info.channels, len  );
+#endif
+
 
 	sc = s->cache = Z_Malloc (len + sizeof(sfxcache_t));
 	if (!sc)
@@ -159,10 +195,17 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	sc->length = info.samples;
 	sc->loopstart = info.loopstart;
 	sc->speed = info.rate;
-	sc->width = info.width;
+	//sc->width = info.width;
 	sc->stereo = info.channels;
 
-	ResampleSfx (s, sc->speed, sc->width, data + info.dataofs);
+	// moved here to save sound memory
+	if (s_loadas8bit->value)
+		sc->width = 1;
+	else
+		sc->width = info.width;
+
+	//ResampleSfx (s, sc->speed, sc->width, data + info.dataofs);
+	ResampleSfx (s, info.rate ,info.width, data + info.dataofs);
 
 	FS_FreeFile (data);
 
