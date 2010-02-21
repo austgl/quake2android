@@ -37,6 +37,84 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //===============================================================================
 
+#define DEBUG_HUNK 0
+
+#define USE_MMAP 1
+
+#if USE_MMAP==0
+// jeyries :  no hunk system
+
+static int maxhunksize;
+static int curhunksize;
+
+void *Hunk_Begin (int maxsize)
+{
+#if DEBUG_HUNK
+	Sys_Printf("Hunk_Begin %d\n", maxsize );
+#endif
+
+	// reserve a huge chunk of memory, but don't commit any yet
+	maxhunksize = maxsize;
+	curhunksize = 0;
+
+
+
+	return NULL;
+}
+
+void *Hunk_Alloc (int size)
+{
+	byte *buf;
+
+	// round to cacheline
+	//size = (size+31)&~31;
+
+	//printf("Hunk_Alloc : %d bytes\n",size );
+
+
+
+
+	buf = malloc (size);
+
+	if (buf == NULL)
+		Sys_Error("unable to virtual allocate %d bytes", size);
+
+	memset (buf, 0, size);
+
+	curhunksize += size;
+
+#if DEBUG_HUNK
+	Sys_Printf("Hunk_Alloc : %d @ %p\n",size, buf );
+#endif
+
+	return buf;
+}
+
+int Hunk_End (void)
+{
+	//printf("Hunk_End : used %d from %d bytes\n", curhunksize, maxhunksize );
+#if DEBUG_HUNK
+	Sys_Printf("Hunk_End : used %d from %d bytes\n", curhunksize, maxhunksize );
+#endif
+
+	return curhunksize;
+}
+
+void Hunk_Free (void *base)
+{
+	//printf("Hunk_Free : %p\n", base );
+#if DEBUG_HUNK
+	Sys_Printf("Hunk_Free : %p\n", base );
+#endif
+
+	if (base) {
+		free (base);
+	}
+}
+
+
+#else
+
 byte *membase;
 int maxhunksize;
 int curhunksize;
@@ -60,6 +138,10 @@ void *Hunk_Begin (int maxsize)
 
 	*((int *)membase) = curhunksize;
 
+#if DEBUG_HUNK
+	Sys_Printf("Hunk_Begin %d %p\n", maxsize, membase );
+#endif
+	
 	return membase + sizeof(int);
 }
 
@@ -67,6 +149,10 @@ void *Hunk_Alloc (int size)
 {
 	byte *buf;
 
+#if DEBUG_HUNK
+	Sys_Printf("Hunk_Alloc %d\n", size );
+#endif
+	
 	// round to cacheline
 	size = (size+31)&~31;
 	if (curhunksize + size > maxhunksize)
@@ -80,6 +166,10 @@ int Hunk_End (void)
 {
 	byte *n;
 
+#if DEBUG_HUNK
+	Sys_Printf("Hunk_End %d\n", curhunksize );
+#endif
+	
 #if defined(__FreeBSD__)
   size_t old_size = maxhunksize;
   size_t new_size = curhunksize + sizeof(int);
@@ -97,11 +187,18 @@ int Hunk_End (void)
     n = munmap(unmap_base, unmap_len) + membase;
   }
 #endif
+#if ANDROID
+  // do nothing.
+  // mremap changes the base adress => error
+  // seems to work because of virtual memory
+  // (i.e unused pages do not use physical memory)
+#else
 #if defined(__linux__)
 	n = mremap(membase, maxhunksize, curhunksize + sizeof(int), 0);
 #endif
 	if (n != membase)
 		Sys_Error("Hunk_End:  Could not remap virtual block (%d)", errno);
+#endif
 	*((int *)membase) = curhunksize + sizeof(int);
 	
 	return curhunksize;
@@ -110,13 +207,18 @@ int Hunk_End (void)
 void Hunk_Free (void *base)
 {
 	byte *m;
-
+#if DEBUG_HUNK
+	Sys_Printf("Hunk_Free %p\n", base );
+#endif
+	
 	if (base) {
 		m = ((byte *)base) - sizeof(int);
 		if (munmap(m, *((int *)m)))
 			Sys_Error("Hunk_Free: munmap failed (%d)", errno);
 	}
 }
+
+#endif
 
 //===============================================================================
 

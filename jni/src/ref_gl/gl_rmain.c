@@ -20,6 +20,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // r_main.c
 #include "gl_local.h"
 
+
+#define ENABLE_EXTENSION 0
+
+#define DEBUG_MAIN 1
+
 void R_Clear (void);
 
 viddef_t	vid;
@@ -797,11 +802,6 @@ void R_Clear (void)
 
 	qglDepthRange (gldepthmin, gldepthmax);
 
-	/* stencilbuffer shadows */
-	if (gl_shadows->value && have_stencil && gl_stencilshadow->value) {
-		qglClearStencil(1);
-		qglClear(GL_STENCIL_BUFFER_BIT);
-	}
 }
 
 void R_Flash( void )
@@ -1266,6 +1266,7 @@ int R_Init( void *hinstance, void *hWnd )
 	/*
 	** grab extensions
 	*/
+#if ENABLE_EXTENSION
 	if ( strstr( gl_config.extensions_string, "GL_EXT_compiled_vertex_array" ) || 
 		 strstr( gl_config.extensions_string, "GL_SGI_compiled_vertex_array" ) )
 	{
@@ -1274,22 +1275,26 @@ int R_Init( void *hinstance, void *hWnd )
 		qglUnlockArraysEXT = ( void * ) qwglGetProcAddress( "glUnlockArraysEXT" );
 	}
 	else
+#endif
 	{
 		ri.Con_Printf( PRINT_ALL, "...GL_EXT_compiled_vertex_array not found\n" );
 	}
 
 #ifdef _WIN32
+#if ENABLE_EXTENSION
 	if ( strstr( gl_config.extensions_string, "WGL_EXT_swap_control" ) )
 	{
 		qwglSwapIntervalEXT = ( BOOL (WINAPI *)(int)) qwglGetProcAddress( "wglSwapIntervalEXT" );
 		ri.Con_Printf( PRINT_ALL, "...enabling WGL_EXT_swap_control\n" );
 	}
 	else
+#endif
 	{
 		ri.Con_Printf( PRINT_ALL, "...WGL_EXT_swap_control not found\n" );
 	}
 #endif
 
+#if ENABLE_EXTENSION
 	if ( strstr( gl_config.extensions_string, "GL_EXT_point_parameters" ) )
 	{
 		if ( gl_ext_pointparameters->value )
@@ -1304,11 +1309,13 @@ int R_Init( void *hinstance, void *hWnd )
 		}
 	}
 	else
+#endif
 	{
 		ri.Con_Printf( PRINT_ALL, "...GL_EXT_point_parameters not found\n" );
 	}
 
 #ifdef __linux__
+#if ENABLE_EXTENSION
 	if ( strstr( gl_config.extensions_string, "3DFX_set_global_palette" ))
 	{
 		if ( gl_ext_palettedtexture->value )
@@ -1323,11 +1330,14 @@ int R_Init( void *hinstance, void *hWnd )
 		}
 	}
 	else
+#endif
 	{
 		ri.Con_Printf( PRINT_ALL, "...3DFX_set_global_palette not found\n" );
 	}
 #endif
 
+
+#if ENABLE_EXTENSION
 	if ( !qglColorTableEXT &&
 		strstr( gl_config.extensions_string, "GL_EXT_paletted_texture" ) && 
 		strstr( gl_config.extensions_string, "GL_EXT_shared_texture_palette" ) )
@@ -1343,10 +1353,40 @@ int R_Init( void *hinstance, void *hWnd )
 		}
 	}
 	else
+#endif
 	{
 		ri.Con_Printf( PRINT_ALL, "...GL_EXT_shared_texture_palette not found\n" );
 	}
 
+
+#ifdef ANDROID
+	// GL_RENDERER
+	// Motorola Droid : PowerVR SGX 530
+	// Samsung Galaxy : Q3Dimension MSM7500 01.02.08 0 4.0.0
+	// Nexus One : Adreno
+	if ( !gl_ext_multitexture->value ) {
+		ri.Con_Printf( PRINT_ALL, "...ignoring GL_ARB_multitexture\n" );
+		qglMTexCoord2fSGIS = 0;
+		qglActiveTextureARB = 0;
+		qglClientActiveTextureARB = 0;
+		
+	} else if ( strstr( renderer_buffer, "powervr" ) ){
+		ri.Con_Printf( PRINT_ALL, "...disabling OpenGL-ES multitexture ( PowerVR chipset )\n" );
+		qglMTexCoord2fSGIS = 0;
+		qglActiveTextureARB = 0;
+		qglClientActiveTextureARB = 0;
+
+    } else {
+		ri.Con_Printf( PRINT_ALL, "...using OpenGL-ES multitexture\n" );
+	
+    }
+	QGL_TEXTURE0 = GL_TEXTURE0_ARB;
+	QGL_TEXTURE1 = GL_TEXTURE1_ARB;
+	
+#endif
+
+	// disable multitexture for i386
+#if ENABLE_EXTENSION
 	if ( strstr( gl_config.extensions_string, "GL_ARB_multitexture" ) )
 	{
 		if ( gl_ext_multitexture->value )
@@ -1364,10 +1404,13 @@ int R_Init( void *hinstance, void *hWnd )
 		}
 	}
 	else
+#endif
 	{
 		ri.Con_Printf( PRINT_ALL, "...GL_ARB_multitexture not found\n" );
 	}
 
+
+#if ENABLE_EXTENSION
 	if ( strstr( gl_config.extensions_string, "GL_SGIS_multitexture" ) )
 	{
 		if ( qglActiveTextureARB )
@@ -1388,6 +1431,7 @@ int R_Init( void *hinstance, void *hWnd )
 		}
 	}
 	else
+#endif
 	{
 		ri.Con_Printf( PRINT_ALL, "...GL_SGIS_multitexture not found\n" );
 	}
@@ -1420,6 +1464,9 @@ R_Shutdown
 */
 void R_Shutdown (void)
 {	
+#if DEBUG_MAIN
+	Com_Printf("R_Shutdown");
+#endif	
 	ri.Cmd_RemoveCommand ("modellist");
 	ri.Cmd_RemoveCommand ("screenshot");
 	ri.Cmd_RemoveCommand ("imagelist");
@@ -1485,7 +1532,7 @@ void R_BeginFrame( float camera_separation )
 		vid_gamma->modified = false;
 
 		if ( gl_state.hwgamma ) {
-			UpdateHardwareGamma();
+			//UpdateHardwareGamma();
 		} else if ( gl_config.renderer & ( GL_RENDERER_VOODOO ) )
 		{
 			char envbuffer[1024];

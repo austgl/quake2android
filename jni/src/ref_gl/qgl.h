@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -28,7 +28,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <windows.h>
 #endif
 
+#ifdef ANDROID
+#include "../android/gl.h"
+#else
 #include <GL/gl.h>
+#endif
+
 #ifndef SOLARIS
 //#include <GL/glext.h>
 #endif
@@ -449,6 +454,17 @@ void Fake_glColorTableEXT( GLenum target, GLenum internalformat,
 extern int QGL_TEXTURE0, QGL_TEXTURE1; /* ARB/SGIS texture defs */
 
 #ifdef SOLARIS /* these are in glext.h, on platforms that have it */
+/*
+** extension constants
+*/
+#define GL_POINT_SIZE_MIN_EXT				0x8126
+#define GL_POINT_SIZE_MAX_EXT				0x8127
+#define GL_POINT_FADE_THRESHOLD_SIZE_EXT	0x8128
+#define GL_DISTANCE_ATTENUATION_EXT			0x8129
+#endif
+
+
+#ifdef ANDROID /* these are in glext.h, on platforms that have it */
 /*
 ** extension constants
 */

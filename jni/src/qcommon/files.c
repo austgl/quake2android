@@ -561,6 +561,22 @@ Use ~/.quake2/dir as fs_gamedir
 */
 void FS_AddHomeAsGameDirectory (char *dir)
 {
+#ifdef ANDROID
+	char gdir[MAX_OSPATH];
+
+	int len = snprintf(gdir,sizeof(gdir),"/sdcard/%s/", dir);
+	Com_Printf("using %s for writing\n",gdir);
+	FS_CreatePath (gdir);
+
+	if ((len > 0) && (len < sizeof(gdir)) && (gdir[len-1] == '/'))
+		gdir[len-1] = 0;
+
+	strncpy(fs_gamedir,gdir,sizeof(fs_gamedir)-1);
+	fs_gamedir[sizeof(fs_gamedir)-1] = 0;
+
+	FS_AddGameDirectory (gdir);
+
+#else
 #ifndef _WIN32
 	char gdir[MAX_OSPATH];
 	char *homedir=getenv("HOME");
@@ -578,6 +594,7 @@ void FS_AddHomeAsGameDirectory (char *dir)
 		
 		FS_AddGameDirectory (gdir);
 	}
+#endif
 #endif
 }
 

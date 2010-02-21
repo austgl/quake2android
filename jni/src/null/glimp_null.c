@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -29,6 +29,7 @@ void		GLimp_EndFrame( void )
 
 int 		GLimp_Init( void *hinstance, void *hWnd )
 {
+	return true; // better
 }
 
 void		GLimp_Shutdown( void )
@@ -37,6 +38,7 @@ void		GLimp_Shutdown( void )
 
 int     	GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 {
+	return rserr_ok; //bettter
 }
 
 void		GLimp_AppActivate( qboolean active )

@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -27,11 +27,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ** QGL_Init() - loads libraries, assigns function pointers, etc.
 ** QGL_Shutdown() - unloads libraries, NULLs function pointers
 */
+
+
+
 #include "../ref_gl/gl_local.h"
 #include "glw_linux.h"
 
 #include <dlfcn.h>
 
+#define USE_NANOGL 1
+
+#if USE_NANOGL
+#include "../android/nanogl.h"
+#endif
 
 void ( APIENTRY * qglAccum )(GLenum op, GLfloat value);
 void ( APIENTRY * qglAlphaFunc )(GLenum func, GLclampf ref);
@@ -720,181 +728,201 @@ static void ( APIENTRY * dllVertex4sv )(const GLshort *v);
 static void ( APIENTRY * dllVertexPointer )(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 static void ( APIENTRY * dllViewport )(GLint x, GLint y, GLsizei width, GLsizei height);
 
+
+
+void qgl_printf (char *fmt, ...)
+{
+	va_list		argptr;
+
+	va_start (argptr,fmt);
+
+
+	vfprintf( glw_state.log_fp, fmt, argptr);
+
+	va_end (argptr);
+
+
+	//fflush( glw_state.log_fp );
+
+
+
+}
+
 static void APIENTRY logAccum(GLenum op, GLfloat value)
 {
-	fprintf( glw_state.log_fp, "glAccum\n" );
+	qgl_printf( "glAccum\n" );
 	dllAccum( op, value );
 }
 
 static void APIENTRY logAlphaFunc(GLenum func, GLclampf ref)
 {
-	fprintf( glw_state.log_fp, "glAlphaFunc( 0x%x, %f )\n", func, ref );
+	qgl_printf( "glAlphaFunc( 0x%x, %f )\n", func, ref );
 	dllAlphaFunc( func, ref );
 }
 
 static GLboolean APIENTRY logAreTexturesResident(GLsizei n, const GLuint *textures, GLboolean *residences)
 {
-	fprintf( glw_state.log_fp, "glAreTexturesResident\n" );
+	qgl_printf( "glAreTexturesResident\n" );
 	return dllAreTexturesResident( n, textures, residences );
 }
 
 static void APIENTRY logArrayElement(GLint i)
 {
-	fprintf( glw_state.log_fp, "glArrayElement\n" );
+	qgl_printf( "glArrayElement\n" );
 	dllArrayElement( i );
 }
 
 static void APIENTRY logBegin(GLenum mode)
 {
-	fprintf( glw_state.log_fp, "glBegin( 0x%x )\n", mode );
+	qgl_printf( "glBegin( 0x%x )\n", mode );
 	dllBegin( mode );
 }
 
 static void APIENTRY logBindTexture(GLenum target, GLuint texture)
 {
-	fprintf( glw_state.log_fp, "glBindTexture( 0x%x, %u )\n", target, texture );
+	qgl_printf( "glBindTexture( 0x%x, %u )\n", target, texture );
 	dllBindTexture( target, texture );
 }
 
 static void APIENTRY logBitmap(GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap)
 {
-	fprintf( glw_state.log_fp, "glBitmap\n" );
+	qgl_printf( "glBitmap\n" );
 	dllBitmap( width, height, xorig, yorig, xmove, ymove, bitmap );
 }
 
 static void APIENTRY logBlendFunc(GLenum sfactor, GLenum dfactor)
 {
-	fprintf( glw_state.log_fp, "glBlendFunc( 0x%x, 0x%x )\n", sfactor, dfactor );
+	qgl_printf( "glBlendFunc( 0x%x, 0x%x )\n", sfactor, dfactor );
 	dllBlendFunc( sfactor, dfactor );
 }
 
 static void APIENTRY logCallList(GLuint list)
 {
-	fprintf( glw_state.log_fp, "glCallList( %u )\n", list );
+	qgl_printf( "glCallList( %u )\n", list );
 	dllCallList( list );
 }
 
 static void APIENTRY logCallLists(GLsizei n, GLenum type, const void *lists)
 {
-	fprintf( glw_state.log_fp, "glCallLists\n" );
+	qgl_printf( "glCallLists\n" );
 	dllCallLists( n, type, lists );
 }
 
 static void APIENTRY logClear(GLbitfield mask)
 {
-	fprintf( glw_state.log_fp, "glClear\n" );
+	qgl_printf( "glClear\n" );
 	dllClear( mask );
 }
 
 static void APIENTRY logClearAccum(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
-	fprintf( glw_state.log_fp, "glClearAccum\n" );
+	qgl_printf( "glClearAccum\n" );
 	dllClearAccum( red, green, blue, alpha );
 }
 
 static void APIENTRY logClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
 {
-	fprintf( glw_state.log_fp, "glClearColor\n" );
+	qgl_printf( "glClearColor\n" );
 	dllClearColor( red, green, blue, alpha );
 }
 
 static void APIENTRY logClearDepth(GLclampd depth)
 {
-	fprintf( glw_state.log_fp, "glClearDepth\n" );
+	qgl_printf( "glClearDepth\n" );
 	dllClearDepth( depth );
 }
 
 static void APIENTRY logClearIndex(GLfloat c)
 {
-	fprintf( glw_state.log_fp, "glClearIndex\n" );
+	qgl_printf( "glClearIndex\n" );
 	dllClearIndex( c );
 }
 
 static void APIENTRY logClearStencil(GLint s)
 {
-	fprintf( glw_state.log_fp, "glClearStencil\n" );
+	qgl_printf( "glClearStencil\n" );
 	dllClearStencil( s );
 }
 
 static void APIENTRY logClipPlane(GLenum plane, const GLdouble *equation)
 {
-	fprintf( glw_state.log_fp, "glClipPlane\n" );
+	qgl_printf( "glClipPlane\n" );
 	dllClipPlane( plane, equation );
 }
 
 static void APIENTRY logColor3b(GLbyte red, GLbyte green, GLbyte blue)
 {
-	fprintf( glw_state.log_fp, "glColor3b\n" );
+	qgl_printf( "glColor3b\n" );
 	dllColor3b( red, green, blue );
 }
 
 static void APIENTRY logColor3bv(const GLbyte *v)
 {
-	fprintf( glw_state.log_fp, "glColor3bv\n" );
+	qgl_printf( "glColor3bv\n" );
 	dllColor3bv( v );
 }
 
 static void APIENTRY logColor3d(GLdouble red, GLdouble green, GLdouble blue)
 {
-	fprintf( glw_state.log_fp, "glColor3d\n" );
+	qgl_printf( "glColor3d\n" );
 	dllColor3d( red, green, blue );
 }
 
 static void APIENTRY logColor3dv(const GLdouble *v)
 {
-	fprintf( glw_state.log_fp, "glColor3dv\n" );
+	qgl_printf( "glColor3dv\n" );
 	dllColor3dv( v );
 }
 
 static void APIENTRY logColor3f(GLfloat red, GLfloat green, GLfloat blue)
 {
-	fprintf( glw_state.log_fp, "glColor3f\n" );
+	qgl_printf( "glColor3f\n" );
 	dllColor3f( red, green, blue );
 }
 
 static void APIENTRY logColor3fv(const GLfloat *v)
 {
-	fprintf( glw_state.log_fp, "glColor3fv\n" );
+	qgl_printf( "glColor3fv\n" );
 	dllColor3fv( v );
 }
 
 static void APIENTRY logColor3i(GLint red, GLint green, GLint blue)
 {
-	fprintf( glw_state.log_fp, "glColor3i\n" );
+	qgl_printf( "glColor3i\n" );
 	dllColor3i( red, green, blue );
 }
 
 static void APIENTRY logColor3iv(const GLint *v)
 {
-	fprintf( glw_state.log_fp, "glColor3iv\n" );
+	qgl_printf( "glColor3iv\n" );
 	dllColor3iv( v );
 }
 
 static void APIENTRY logColor3s(GLshort red, GLshort green, GLshort blue)
 {
-	fprintf( glw_state.log_fp, "glColor3s\n" );
+	qgl_printf( "glColor3s\n" );
 	dllColor3s( red, green, blue );
 }
 
 static void APIENTRY logColor3sv(const GLshort *v)
 {
-	fprintf( glw_state.log_fp, "glColor3sv\n" );
+	qgl_printf( "glColor3sv\n" );
 	dllColor3sv( v );
 }
 
 static void APIENTRY logColor3ub(GLubyte red, GLubyte green, GLubyte blue)
 {
-	fprintf( glw_state.log_fp, "glColor3ub\n" );
+	qgl_printf( "glColor3ub\n" );
 	dllColor3ub( red, green, blue );
 }
 
 static void APIENTRY logColor3ubv(const GLubyte *v)
 {
-	fprintf( glw_state.log_fp, "glColor3ubv\n" );
+	qgl_printf( "glColor3ubv\n" );
 	dllColor3ubv( v );
 }
 
-#define SIG( x ) fprintf( glw_state.log_fp, x "\n" )
+#define SIG( x ) qgl_printf( x "\n" )
 
 static void APIENTRY logColor3ui(GLuint red, GLuint green, GLuint blue)
 {
@@ -944,12 +972,12 @@ static void APIENTRY logColor4dv(const GLdouble *v)
 }
 static void APIENTRY logColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
-	fprintf( glw_state.log_fp, "glColor4f( %f,%f,%f,%f )\n", red, green, blue, alpha );
+	qgl_printf( "glColor4f( %f,%f,%f,%f )\n", red, green, blue, alpha );
 	dllColor4f( red, green, blue, alpha );
 }
 static void APIENTRY logColor4fv(const GLfloat *v)
 {
-	fprintf( glw_state.log_fp, "glColor4fv( %f,%f,%f,%f )\n", v[0], v[1], v[2], v[3] );
+	qgl_printf( "glColor4fv( %f,%f,%f,%f )\n", v[0], v[1], v[2], v[3] );
 	dllColor4fv( v );
 }
 static void APIENTRY logColor4i(GLint red, GLint green, GLint blue, GLint alpha)
@@ -1087,7 +1115,7 @@ static void APIENTRY logDepthRange(GLclampd zNear, GLclampd zFar)
 
 static void APIENTRY logDisable(GLenum cap)
 {
-	fprintf( glw_state.log_fp, "glDisable( 0x%x )\n", cap );
+	qgl_printf( "glDisable( 0x%x )\n", cap );
 	dllDisable( cap );
 }
 
@@ -1141,7 +1169,7 @@ static void APIENTRY logEdgeFlagv(const GLboolean *flag)
 
 static void APIENTRY logEnable(GLenum cap)
 {
-	fprintf( glw_state.log_fp, "glEnable( 0x%x )\n", cap );
+	qgl_printf( "glEnable( 0x%x )\n", cap );
 	dllEnable( cap );
 }
 
@@ -1469,7 +1497,7 @@ static void APIENTRY logGetTexParameteriv(GLenum target, GLenum pname, GLint *pa
 
 static void APIENTRY logHint(GLenum target, GLenum mode)
 {
-	fprintf( glw_state.log_fp, "glHint( 0x%x, 0x%x )\n", target, mode );
+	qgl_printf( "glHint( 0x%x, 0x%x )\n", target, mode );
 	dllHint( target, mode );
 }
 
@@ -1888,7 +1916,7 @@ static void APIENTRY logPointSize(GLfloat size)
 
 static void APIENTRY logPolygonMode(GLenum face, GLenum mode)
 {
-	fprintf( glw_state.log_fp, "glPolygonMode( 0x%x, 0x%x )\n", face, mode );
+	qgl_printf( "glPolygonMode( 0x%x, 0x%x )\n", face, mode );
 	dllPolygonMode( face, mode );
 }
 
@@ -2368,7 +2396,7 @@ static void APIENTRY logTexCoordPointer(GLint size, GLenum type, GLsizei stride,
 
 static void APIENTRY logTexEnvf(GLenum target, GLenum pname, GLfloat param)
 {
-	fprintf( glw_state.log_fp, "glTexEnvf( 0x%x, 0x%x, %f )\n", target, pname, param );
+	qgl_printf( "glTexEnvf( 0x%x, 0x%x, %f )\n", target, pname, param );
 	dllTexEnvf( target, pname, param );
 }
 
@@ -2380,7 +2408,7 @@ static void APIENTRY logTexEnvfv(GLenum target, GLenum pname, const GLfloat *par
 
 static void APIENTRY logTexEnvi(GLenum target, GLenum pname, GLint param)
 {
-	fprintf( glw_state.log_fp, "glTexEnvi( 0x%x, 0x%x, 0x%x )\n", target, pname, param );
+	qgl_printf( "glTexEnvi( 0x%x, 0x%x, 0x%x )\n", target, pname, param );
 	dllTexEnvi( target, pname, param );
 }
 static void APIENTRY logTexEnviv(GLenum target, GLenum pname, const GLint *params)
@@ -2434,7 +2462,7 @@ static void APIENTRY logTexImage2D(GLenum target, GLint level, GLint internalfor
 
 static void APIENTRY logTexParameterf(GLenum target, GLenum pname, GLfloat param)
 {
-	fprintf( glw_state.log_fp, "glTexParameterf( 0x%x, 0x%x, %f )\n", target, pname, param );
+	qgl_printf( "glTexParameterf( 0x%x, 0x%x, %f )\n", target, pname, param );
 	dllTexParameterf( target, pname, param );
 }
 
@@ -2445,7 +2473,7 @@ static void APIENTRY logTexParameterfv(GLenum target, GLenum pname, const GLfloa
 }
 static void APIENTRY logTexParameteri(GLenum target, GLenum pname, GLint param)
 {
-	fprintf( glw_state.log_fp, "glTexParameteri( 0x%x, 0x%x, 0x%x )\n", target, pname, param );
+	qgl_printf( "glTexParameteri( 0x%x, 0x%x, 0x%x )\n", target, pname, param );
 	dllTexParameteri( target, pname, param );
 }
 static void APIENTRY logTexParameteriv(GLenum target, GLenum pname, const GLint *params)
@@ -2960,25 +2988,41 @@ void QGL_Shutdown( void )
 	qglViewport                  = NULL;
 }
 
+#if USE_NANOGL
+#else
 #define GPA( a ) dlsym( glw_state.OpenGLLib, a )
+#endif
 
 void *qwglGetProcAddress(char *symbol)
 {
+#if USE_NANOGL
+	return NULL;
+#else
 	if (glw_state.OpenGLLib)
 		return GPA ( symbol );
 	return NULL;
+#endif
 }
 
 /*
 ** QGL_Init
 **
-** This is responsible for binding our qgl function pointers to 
-** the appropriate GL stuff.  In Windows this means doing a 
+** This is responsible for binding our qgl function pointers to
+** the appropriate GL stuff.  In Windows this means doing a
 ** LoadLibrary and a bunch of calls to GetProcAddress.  On other
 ** operating systems we need to do the right thing, whatever that
 ** might be.
-** 
+**
 */
+
+#if USE_NANOGL
+static void QGL_not_implemented()
+{
+	Com_Printf ("QGL : not implemented");
+	exit(1);
+}
+#endif
+
 
 qboolean QGL_Init( const char *dllname )
 {
@@ -2996,18 +3040,18 @@ qboolean QGL_Init( const char *dllname )
 
 	if ( glw_state.OpenGLLib )
 		QGL_Shutdown();
-	
+
 	if ( ( glw_state.OpenGLLib = dlopen( dllname, RTLD_LAZY ) ) == 0 )
 	{
 		char	fn[MAX_OSPATH];
 		char	*path;
 
-//		ri.Con_Printf(PRINT_ALL, "QGL_Init: Can't load %s from /etc/ld.so.conf: %s\n", 
+//		ri.Con_Printf(PRINT_ALL, "QGL_Init: Can't load %s from /etc/ld.so.conf: %s\n",
 //				dllname, dlerror());
 
 		// try basedir next
 		path = ri.Cvar_Get ("basedir", DEFAULT_BASEDIR, CVAR_NOSET)->string;
-		
+
 		snprintf (fn, MAX_OSPATH, "%s/%s", path, dllname );
 
 		if ( ( glw_state.OpenGLLib = dlopen( fn, RTLD_LAZY ) ) == 0 ) {
@@ -3018,7 +3062,7 @@ qboolean QGL_Init( const char *dllname )
 				return false;
 			}
 		}
-		Com_Printf ("Using %s for OpenGL...", fn); 
+		Com_Printf ("Using %s for OpenGL...", fn);
 	} else {
 		Com_Printf ("Using %s for OpenGL...", dllname);
 	}
@@ -3032,6 +3076,412 @@ qboolean QGL_Init( const char *dllname )
 	  Com_Printf ("Opened GLU sucessfully OpenGLU...", dllname);
 	}
 #endif
+
+#if USE_NANOGL
+	Com_Printf ("Using NanoGL wrapper ...\n");
+
+	// init nano gl
+	extern void InitGLStructs();
+
+ 	InitGLStructs();
+
+ 	// init pointers to not implemented
+	dllAccum = (void*)QGL_not_implemented;
+	dllAlphaFunc = (void*)QGL_not_implemented;
+	dllAreTexturesResident = (void*)QGL_not_implemented;
+	dllArrayElement = (void*)QGL_not_implemented;
+	dllBegin = (void*)QGL_not_implemented;
+	dllBindTexture = (void*)QGL_not_implemented;
+	dllBitmap = (void*)QGL_not_implemented;
+	dllBlendFunc = (void*)QGL_not_implemented;
+	dllCallList = (void*)QGL_not_implemented;
+	dllCallLists = (void*)QGL_not_implemented;
+	dllClear = (void*)QGL_not_implemented;
+	dllClearAccum = (void*)QGL_not_implemented;
+	dllClearColor = (void*)QGL_not_implemented;
+	dllClearDepth = (void*)QGL_not_implemented;
+	dllClearIndex = (void*)QGL_not_implemented;
+	dllClearStencil = (void*)QGL_not_implemented;
+	dllClipPlane = (void*)QGL_not_implemented;
+	dllColor3b = (void*)QGL_not_implemented;
+	dllColor3bv = (void*)QGL_not_implemented;
+	dllColor3d = (void*)QGL_not_implemented;
+	dllColor3dv = (void*)QGL_not_implemented;
+	dllColor3f = (void*)QGL_not_implemented;
+	dllColor3fv = (void*)QGL_not_implemented;
+	dllColor3i = (void*)QGL_not_implemented;
+	dllColor3iv = (void*)QGL_not_implemented;
+	dllColor3s = (void*)QGL_not_implemented;
+	dllColor3sv = (void*)QGL_not_implemented;
+	dllColor3ub = (void*)QGL_not_implemented;
+	dllColor3ubv = (void*)QGL_not_implemented;
+	dllColor3ui = (void*)QGL_not_implemented;
+	dllColor3uiv = (void*)QGL_not_implemented;
+	dllColor3us = (void*)QGL_not_implemented;
+	dllColor3usv = (void*)QGL_not_implemented;
+	dllColor4b = (void*)QGL_not_implemented;
+	dllColor4bv = (void*)QGL_not_implemented;
+	dllColor4d = (void*)QGL_not_implemented;
+	dllColor4dv = (void*)QGL_not_implemented;
+	dllColor4f = (void*)QGL_not_implemented;
+	dllColor4fv = (void*)QGL_not_implemented;
+	dllColor4i = (void*)QGL_not_implemented;
+	dllColor4iv = (void*)QGL_not_implemented;
+	dllColor4s = (void*)QGL_not_implemented;
+	dllColor4sv = (void*)QGL_not_implemented;
+	dllColor4ub = (void*)QGL_not_implemented;
+	dllColor4ubv = (void*)QGL_not_implemented;
+	dllColor4ui = (void*)QGL_not_implemented;
+	dllColor4uiv = (void*)QGL_not_implemented;
+	dllColor4us = (void*)QGL_not_implemented;
+	dllColor4usv = (void*)QGL_not_implemented;
+	dllColorMask = (void*)QGL_not_implemented;
+	dllColorMaterial = (void*)QGL_not_implemented;
+	dllColorPointer = (void*)QGL_not_implemented;
+	dllCopyPixels = (void*)QGL_not_implemented;
+	dllCopyTexImage1D = (void*)QGL_not_implemented;
+	dllCopyTexImage2D = (void*)QGL_not_implemented;
+	dllCopyTexSubImage1D = (void*)QGL_not_implemented;
+	dllCopyTexSubImage2D = (void*)QGL_not_implemented;
+	dllCullFace = (void*)QGL_not_implemented;
+	dllDeleteLists = (void*)QGL_not_implemented;
+	dllDeleteTextures = (void*)QGL_not_implemented;
+	dllDepthFunc = (void*)QGL_not_implemented;
+	dllDepthMask = (void*)QGL_not_implemented;
+	dllDepthRange = (void*)QGL_not_implemented;
+	dllDisable = (void*)QGL_not_implemented;
+	dllDisableClientState = (void*)QGL_not_implemented;
+	dllDrawArrays = (void*)QGL_not_implemented;
+	dllDrawBuffer = (void*)QGL_not_implemented;
+	dllDrawElements = (void*)QGL_not_implemented;
+	dllDrawPixels = (void*)QGL_not_implemented;
+	dllEdgeFlag = (void*)QGL_not_implemented;
+	dllEdgeFlagPointer = (void*)QGL_not_implemented;
+	dllEdgeFlagv = (void*)QGL_not_implemented;
+	dllEnable                    = (void*)QGL_not_implemented;
+	dllEnableClientState         = (void*)QGL_not_implemented;
+	dllEnd                       = (void*)QGL_not_implemented;
+	dllEndList                   = (void*)QGL_not_implemented;
+	dllEvalCoord1d				 = (void*)QGL_not_implemented;
+	dllEvalCoord1dv              = (void*)QGL_not_implemented;
+	dllEvalCoord1f               = (void*)QGL_not_implemented;
+	dllEvalCoord1fv              = (void*)QGL_not_implemented;
+	dllEvalCoord2d               = (void*)QGL_not_implemented;
+	dllEvalCoord2dv              = (void*)QGL_not_implemented;
+	dllEvalCoord2f               = (void*)QGL_not_implemented;
+	dllEvalCoord2fv              = (void*)QGL_not_implemented;
+	dllEvalMesh1                 = (void*)QGL_not_implemented;
+	dllEvalMesh2                 = (void*)QGL_not_implemented;
+	dllEvalPoint1                = (void*)QGL_not_implemented;
+	dllEvalPoint2                = (void*)QGL_not_implemented;
+	dllFeedbackBuffer            = (void*)QGL_not_implemented;
+	dllFinish                    = (void*)QGL_not_implemented;
+	dllFlush                     = (void*)QGL_not_implemented;
+	dllFogf                      = (void*)QGL_not_implemented;
+	dllFogfv                     = (void*)QGL_not_implemented;
+	dllFogi                      = (void*)QGL_not_implemented;
+	dllFogiv                     = (void*)QGL_not_implemented;
+	dllFrontFace                 = (void*)QGL_not_implemented;
+	dllFrustum                   = (void*)QGL_not_implemented;
+	dllGenLists                  = (void*)QGL_not_implemented;
+	dllGenTextures               = (void*)QGL_not_implemented;
+	dllGetBooleanv               = (void*)QGL_not_implemented;
+	dllGetClipPlane              = (void*)QGL_not_implemented;
+	dllGetDoublev                = (void*)QGL_not_implemented;
+	dllGetError                  = (void*)QGL_not_implemented;
+	dllGetFloatv                 = (void*)QGL_not_implemented;
+	dllGetIntegerv               = (void*)QGL_not_implemented;
+	dllGetLightfv                = (void*)QGL_not_implemented;
+	dllGetLightiv                = (void*)QGL_not_implemented;
+	dllGetMapdv                  = (void*)QGL_not_implemented;
+	dllGetMapfv                  = (void*)QGL_not_implemented;
+	dllGetMapiv                  = (void*)QGL_not_implemented;
+	dllGetMaterialfv             = (void*)QGL_not_implemented;
+	dllGetMaterialiv             = (void*)QGL_not_implemented;
+	dllGetPixelMapfv             = (void*)QGL_not_implemented;
+	dllGetPixelMapuiv            = (void*)QGL_not_implemented;
+	dllGetPixelMapusv            = (void*)QGL_not_implemented;
+	dllGetPointerv               = (void*)QGL_not_implemented;
+	dllGetPolygonStipple         = (void*)QGL_not_implemented;
+	dllGetString                 = (void*)QGL_not_implemented;
+	dllGetTexEnvfv               = (void*)QGL_not_implemented;
+	dllGetTexEnviv               = (void*)QGL_not_implemented;
+	dllGetTexGendv               = (void*)QGL_not_implemented;
+	dllGetTexGenfv               = (void*)QGL_not_implemented;
+	dllGetTexGeniv               = (void*)QGL_not_implemented;
+	dllGetTexImage               = (void*)QGL_not_implemented;
+	dllGetTexLevelParameterfv    = (void*)QGL_not_implemented;
+	dllGetTexLevelParameteriv    = (void*)QGL_not_implemented;
+	dllGetTexParameterfv         = (void*)QGL_not_implemented;
+	dllGetTexParameteriv         = (void*)QGL_not_implemented;
+	dllHint                      = (void*)QGL_not_implemented;
+	dllIndexMask                 = (void*)QGL_not_implemented;
+	dllIndexPointer              = (void*)QGL_not_implemented;
+	dllIndexd                    = (void*)QGL_not_implemented;
+	dllIndexdv                   = (void*)QGL_not_implemented;
+	dllIndexf                    = (void*)QGL_not_implemented;
+	dllIndexfv                   = (void*)QGL_not_implemented;
+	dllIndexi                    = (void*)QGL_not_implemented;
+	dllIndexiv                   = (void*)QGL_not_implemented;
+	dllIndexs                    = (void*)QGL_not_implemented;
+	dllIndexsv                   = (void*)QGL_not_implemented;
+	dllIndexub                   = (void*)QGL_not_implemented;
+	dllIndexubv                  = (void*)QGL_not_implemented;
+	dllInitNames                 = (void*)QGL_not_implemented;
+	dllInterleavedArrays         = (void*)QGL_not_implemented;
+	dllIsEnabled                 = (void*)QGL_not_implemented;
+	dllIsList                    = (void*)QGL_not_implemented;
+	dllIsTexture                 = (void*)QGL_not_implemented;
+	dllLightModelf               = (void*)QGL_not_implemented;
+	dllLightModelfv              = (void*)QGL_not_implemented;
+	dllLightModeli               = (void*)QGL_not_implemented;
+	dllLightModeliv              = (void*)QGL_not_implemented;
+	dllLightf                    = (void*)QGL_not_implemented;
+	dllLightfv                   = (void*)QGL_not_implemented;
+	dllLighti                    = (void*)QGL_not_implemented;
+	dllLightiv                   = (void*)QGL_not_implemented;
+	dllLineStipple               = (void*)QGL_not_implemented;
+	dllLineWidth                 = (void*)QGL_not_implemented;
+	dllListBase                  = (void*)QGL_not_implemented;
+	dllLoadIdentity              = (void*)QGL_not_implemented;
+	dllLoadMatrixd               = (void*)QGL_not_implemented;
+	dllLoadMatrixf               = (void*)QGL_not_implemented;
+	dllLoadName                  = (void*)QGL_not_implemented;
+	dllLogicOp                   = (void*)QGL_not_implemented;
+	dllMap1d                     = (void*)QGL_not_implemented;
+	dllMap1f                     = (void*)QGL_not_implemented;
+	dllMap2d                     = (void*)QGL_not_implemented;
+	dllMap2f                     = (void*)QGL_not_implemented;
+	dllMapGrid1d                 = (void*)QGL_not_implemented;
+	dllMapGrid1f                 = (void*)QGL_not_implemented;
+	dllMapGrid2d                 = (void*)QGL_not_implemented;
+	dllMapGrid2f                 = (void*)QGL_not_implemented;
+	dllMaterialf                 = (void*)QGL_not_implemented;
+	dllMaterialfv                = (void*)QGL_not_implemented;
+	dllMateriali                 = (void*)QGL_not_implemented;
+	dllMaterialiv                = (void*)QGL_not_implemented;
+	dllMatrixMode                = (void*)QGL_not_implemented;
+	dllMultMatrixd               = (void*)QGL_not_implemented;
+	dllMultMatrixf               = (void*)QGL_not_implemented;
+	dllNewList                   = (void*)QGL_not_implemented;
+	dllNormal3b                  = (void*)QGL_not_implemented;
+	dllNormal3bv                 = (void*)QGL_not_implemented;
+	dllNormal3d                  = (void*)QGL_not_implemented;
+	dllNormal3dv                 = (void*)QGL_not_implemented;
+	dllNormal3f                  = (void*)QGL_not_implemented;
+	dllNormal3fv                 = (void*)QGL_not_implemented;
+	dllNormal3i                  = (void*)QGL_not_implemented;
+	dllNormal3iv                 = (void*)QGL_not_implemented;
+	dllNormal3s                  = (void*)QGL_not_implemented;
+	dllNormal3sv                 = (void*)QGL_not_implemented;
+	dllNormalPointer             = (void*)QGL_not_implemented;
+	dllOrtho                     = (void*)QGL_not_implemented;
+	dllPassThrough               = (void*)QGL_not_implemented;
+	dllPixelMapfv                = (void*)QGL_not_implemented;
+	dllPixelMapuiv               = (void*)QGL_not_implemented;
+	dllPixelMapusv               = (void*)QGL_not_implemented;
+	dllPixelStoref               = (void*)QGL_not_implemented;
+	dllPixelStorei               = (void*)QGL_not_implemented;
+	dllPixelTransferf            = (void*)QGL_not_implemented;
+	dllPixelTransferi            = (void*)QGL_not_implemented;
+	dllPixelZoom                 = (void*)QGL_not_implemented;
+	dllPointSize                 = (void*)QGL_not_implemented;
+	dllPolygonMode               = (void*)QGL_not_implemented;
+	dllPolygonOffset             = (void*)QGL_not_implemented;
+	dllPolygonStipple            = (void*)QGL_not_implemented;
+	dllPopAttrib                 = (void*)QGL_not_implemented;
+	dllPopClientAttrib           = (void*)QGL_not_implemented;
+	dllPopMatrix                 = (void*)QGL_not_implemented;
+	dllPopName                   = (void*)QGL_not_implemented;
+	dllPrioritizeTextures        = (void*)QGL_not_implemented;
+	dllPushAttrib                = (void*)QGL_not_implemented;
+	dllPushClientAttrib          = (void*)QGL_not_implemented;
+	dllPushMatrix                = (void*)QGL_not_implemented;
+	dllPushName                  = (void*)QGL_not_implemented;
+	dllRasterPos2d               = (void*)QGL_not_implemented;
+	dllRasterPos2dv              = (void*)QGL_not_implemented;
+	dllRasterPos2f               = (void*)QGL_not_implemented;
+	dllRasterPos2fv              = (void*)QGL_not_implemented;
+	dllRasterPos2i               = (void*)QGL_not_implemented;
+	dllRasterPos2iv              = (void*)QGL_not_implemented;
+	dllRasterPos2s               = (void*)QGL_not_implemented;
+	dllRasterPos2sv              = (void*)QGL_not_implemented;
+	dllRasterPos3d               = (void*)QGL_not_implemented;
+	dllRasterPos3dv              = (void*)QGL_not_implemented;
+	dllRasterPos3f               = (void*)QGL_not_implemented;
+	dllRasterPos3fv              = (void*)QGL_not_implemented;
+	dllRasterPos3i               = (void*)QGL_not_implemented;
+	dllRasterPos3iv              = (void*)QGL_not_implemented;
+	dllRasterPos3s               = (void*)QGL_not_implemented;
+	dllRasterPos3sv              = (void*)QGL_not_implemented;
+	dllRasterPos4d               = (void*)QGL_not_implemented;
+	dllRasterPos4dv              = (void*)QGL_not_implemented;
+	dllRasterPos4f               = (void*)QGL_not_implemented;
+	dllRasterPos4fv              = (void*)QGL_not_implemented;
+	dllRasterPos4i               = (void*)QGL_not_implemented;
+	dllRasterPos4iv              = (void*)QGL_not_implemented;
+	dllRasterPos4s               = (void*)QGL_not_implemented;
+	dllRasterPos4sv              = (void*)QGL_not_implemented;
+	dllReadBuffer                = (void*)QGL_not_implemented;
+	dllReadPixels                = (void*)QGL_not_implemented;
+	dllRectd                     = (void*)QGL_not_implemented;
+	dllRectdv                    = (void*)QGL_not_implemented;
+	dllRectf                     = (void*)QGL_not_implemented;
+	dllRectfv                    = (void*)QGL_not_implemented;
+	dllRecti                     = (void*)QGL_not_implemented;
+	dllRectiv                    = (void*)QGL_not_implemented;
+	dllRects                     = (void*)QGL_not_implemented;
+	dllRectsv                    = (void*)QGL_not_implemented;
+	dllRenderMode                = (void*)QGL_not_implemented;
+	dllRotated                   = (void*)QGL_not_implemented;
+	dllRotatef                   = (void*)QGL_not_implemented;
+	dllScaled                    = (void*)QGL_not_implemented;
+	dllScalef                    = (void*)QGL_not_implemented;
+	dllScissor                   = (void*)QGL_not_implemented;
+	dllSelectBuffer              = (void*)QGL_not_implemented;
+	dllShadeModel                = (void*)QGL_not_implemented;
+	dllStencilFunc               = (void*)QGL_not_implemented;
+	dllStencilMask               = (void*)QGL_not_implemented;
+	dllStencilOp                 = (void*)QGL_not_implemented;
+	dllTexCoord1d                = (void*)QGL_not_implemented;
+	dllTexCoord1dv               = (void*)QGL_not_implemented;
+	dllTexCoord1f                = (void*)QGL_not_implemented;
+	dllTexCoord1fv               = (void*)QGL_not_implemented;
+	dllTexCoord1i                = (void*)QGL_not_implemented;
+	dllTexCoord1iv               = (void*)QGL_not_implemented;
+	dllTexCoord1s                = (void*)QGL_not_implemented;
+	dllTexCoord1sv               = (void*)QGL_not_implemented;
+	dllTexCoord2d                = (void*)QGL_not_implemented;
+	dllTexCoord2dv               = (void*)QGL_not_implemented;
+	dllTexCoord2f                = (void*)QGL_not_implemented;
+	dllTexCoord2fv               = (void*)QGL_not_implemented;
+	dllTexCoord2i                = (void*)QGL_not_implemented;
+	dllTexCoord2iv               = (void*)QGL_not_implemented;
+	dllTexCoord2s                = (void*)QGL_not_implemented;
+	dllTexCoord2sv               = (void*)QGL_not_implemented;
+	dllTexCoord3d                = (void*)QGL_not_implemented;
+	dllTexCoord3dv               = (void*)QGL_not_implemented;
+	dllTexCoord3f                = (void*)QGL_not_implemented;
+	dllTexCoord3fv               = (void*)QGL_not_implemented;
+	dllTexCoord3i                = (void*)QGL_not_implemented;
+	dllTexCoord3iv               = (void*)QGL_not_implemented;
+	dllTexCoord3s                = (void*)QGL_not_implemented;
+	dllTexCoord3sv               = (void*)QGL_not_implemented;
+	dllTexCoord4d                = (void*)QGL_not_implemented;
+	dllTexCoord4dv               = (void*)QGL_not_implemented;
+	dllTexCoord4f                = (void*)QGL_not_implemented;
+	dllTexCoord4fv               = (void*)QGL_not_implemented;
+	dllTexCoord4i                = (void*)QGL_not_implemented;
+	dllTexCoord4iv               = (void*)QGL_not_implemented;
+	dllTexCoord4s                = (void*)QGL_not_implemented;
+	dllTexCoord4sv               = (void*)QGL_not_implemented;
+	dllTexCoordPointer           = (void*)QGL_not_implemented;
+	dllTexEnvf                   = (void*)QGL_not_implemented;
+	dllTexEnvfv                  = (void*)QGL_not_implemented;
+	dllTexEnvi                   = (void*)QGL_not_implemented;
+	dllTexEnviv                  = (void*)QGL_not_implemented;
+	dllTexGend                   = (void*)QGL_not_implemented;
+	dllTexGendv                  = (void*)QGL_not_implemented;
+	dllTexGenf                   = (void*)QGL_not_implemented;
+	dllTexGenfv                  = (void*)QGL_not_implemented;
+	dllTexGeni                   = (void*)QGL_not_implemented;
+	dllTexGeniv                  = (void*)QGL_not_implemented;
+	dllTexImage1D                = (void*)QGL_not_implemented;
+	dllTexImage2D                = (void*)QGL_not_implemented;
+	dllTexParameterf             = (void*)QGL_not_implemented;
+	dllTexParameterfv            = (void*)QGL_not_implemented;
+	dllTexParameteri             = (void*)QGL_not_implemented;
+	dllTexParameteriv            = (void*)QGL_not_implemented;
+	dllTexSubImage1D             = (void*)QGL_not_implemented;
+	dllTexSubImage2D             = (void*)QGL_not_implemented;
+	dllTranslated                = (void*)QGL_not_implemented;
+	dllTranslatef                = (void*)QGL_not_implemented;
+	dllVertex2d                  = (void*)QGL_not_implemented;
+	dllVertex2dv                 = (void*)QGL_not_implemented;
+	dllVertex2f                  = (void*)QGL_not_implemented;
+	dllVertex2fv                 = (void*)QGL_not_implemented;
+	dllVertex2i                  = (void*)QGL_not_implemented;
+	dllVertex2iv                 = (void*)QGL_not_implemented;
+	dllVertex2s                  = (void*)QGL_not_implemented;
+	dllVertex2sv                 = (void*)QGL_not_implemented;
+	dllVertex3d                  = (void*)QGL_not_implemented;
+	dllVertex3dv                 = (void*)QGL_not_implemented;
+	dllVertex3f                  = (void*)QGL_not_implemented;
+	dllVertex3fv                 = (void*)QGL_not_implemented;
+	dllVertex3i                  = (void*)QGL_not_implemented;
+	dllVertex3iv                 = (void*)QGL_not_implemented;
+	dllVertex3s                  = (void*)QGL_not_implemented;
+	dllVertex3sv                 = (void*)QGL_not_implemented;
+	dllVertex4d                  = (void*)QGL_not_implemented;
+	dllVertex4dv                 = (void*)QGL_not_implemented;
+	dllVertex4f                  = (void*)QGL_not_implemented;
+	dllVertex4fv                 = (void*)QGL_not_implemented;
+	dllVertex4i                  = (void*)QGL_not_implemented;
+	dllVertex4iv                 = (void*)QGL_not_implemented;
+	dllVertex4s                  = (void*)QGL_not_implemented;
+	dllVertex4sv                 = (void*)QGL_not_implemented;
+	dllVertexPointer             = (void*)QGL_not_implemented;
+	dllViewport                  = (void*)QGL_not_implemented;
+
+
+ 	// init pointers
+	dllBegin                =nanoglBegin;
+	dllColor3f              =nanoglColor3f;
+	dllTexCoord2f           =nanoglTexCoord2f;
+	dllVertex2f             =nanoglVertex2f;
+	dllEnd                  =nanoglEnd;
+	dllColor4f              =nanoglColor4f;
+	dllEnableClientState    =nanoglEnableClientState;
+	dllVertexPointer        =nanoglVertexPointer;
+	dllColorPointer         =nanoglColorPointer;
+	dllDepthRange           =nanoglDepthRange;
+	dllDepthMask            =nanoglDepthMask;
+	dllMatrixMode           =nanoglMatrixMode;
+	dllPushMatrix           =nanoglPushMatrix;
+	dllLoadIdentity         =nanoglLoadIdentity;
+	dllScalef               =nanoglScalef;
+	dllMatrixMode           =nanoglMatrixMode;
+	dllCullFace             =nanoglCullFace;
+	dllClearColor           =nanoglClearColor;
+	dllTranslatef           =nanoglTranslatef;
+	dllRotatef              =nanoglRotatef;
+	dllVertex3f             =nanoglVertex3f;
+	dllPopMatrix            =nanoglPopMatrix;
+	dllEnable               =nanoglEnable;
+	dllDisable              =nanoglDisable;
+	dllVertex3fv            =nanoglVertex3fv;
+	dllPointSize            =nanoglPointSize;
+	dllAlphaFunc            =nanoglAlphaFunc;
+	dllPolygonMode          =nanoglPolygonMode;
+	dllShadeModel           =nanoglShadeModel;
+	dllTexParameterf        =nanoglTexParameterf;
+	dllBlendFunc            =nanoglBlendFunc;
+	dllFrustum              =nanoglFrustum;
+	dllGetString            =nanoglGetString;
+	//#define qwglGetProcAddress      eglGetProcAddress
+	dllTexImage2D           =nanoglTexImage2D;
+	dllTexSubImage2D        =nanoglTexSubImage2D;
+	dllLoadMatrixf          =nanoglLoadMatrixf;
+	dllReadPixels           =nanoglReadPixels;
+	dllGetError             =nanoglGetError;
+	dllTexEnvf              =nanoglTexEnvf;
+	dllBindTexture          =nanoglBindTexture;
+	dllDeleteTextures       =nanoglDeleteTextures;
+	dllArrayElement         =nanoglArrayElement;
+	dllColor3fv             =nanoglColor3fv;
+	dllColor4ubv            =nanoglColor4ubv;
+	dllColor4fv             =nanoglColor4fv;
+	dllClear                =nanoglClear;
+	dllScissor              =nanoglScissor;
+	dllViewport             =nanoglViewport;
+	dllGetFloatv            =nanoglGetFloatv;
+	dllDepthFunc            =nanoglDepthFunc;
+	dllFinish               =nanoglFinish;
+	dllOrtho                =nanoglOrtho;
+	dllDrawBuffer           =nanoglDrawBuffer;
+	dllClearDepth           =nanoglClearDepth;
+
+#else
 	qglAccum                     = dllAccum = GPA( "glAccum" );
 	qglAlphaFunc                 = dllAlphaFunc = GPA( "glAlphaFunc" );
 	qglAreTexturesResident       = dllAreTexturesResident = GPA( "glAreTexturesResident" );
@@ -3368,7 +3818,8 @@ qboolean QGL_Init( const char *dllname )
 	qglVertex4sv                 = 	dllVertex4sv                 = GPA( "glVertex4sv" );
 	qglVertexPointer             = 	dllVertexPointer             = GPA( "glVertexPointer" );
 	qglViewport                  = 	dllViewport                  = GPA( "glViewport" );
-	
+#endif
+
 	qglLockArraysEXT = 0;
 	qglUnlockArraysEXT = 0;
 	qglPointParameterfEXT = 0;
@@ -3379,6 +3830,8 @@ qboolean QGL_Init( const char *dllname )
 	qglMTexCoord2fSGIS = 0;
 	qglActiveTextureARB = 0;
 	qglClientActiveTextureARB = 0;
+
+	GLimp_EnableLogging(false);
 
 	return true;
 }
@@ -3398,10 +3851,10 @@ void GLimp_EnableLogging( qboolean enable )
 
 			asctime( newtime );
 
-			Com_sprintf( buffer, sizeof(buffer), "%s/gl.log", ri.FS_Gamedir() ); 
+			Com_sprintf( buffer, sizeof(buffer), "%s/gl.log", ri.FS_Gamedir() );
 			glw_state.log_fp = fopen( buffer, "wt" );
 
-			fprintf( glw_state.log_fp, "%s\n", asctime( newtime ) );
+			qgl_printf( "%s\n", asctime( newtime ) );
 		}
 
 		qglAccum                     = logAccum;
@@ -4085,7 +4538,7 @@ void GLimp_EnableLogging( qboolean enable )
 
 void GLimp_LogNewFrame( void )
 {
-	fprintf( glw_state.log_fp, "*** R_BeginFrame ***\n" );
+	qgl_printf( "*** R_BeginFrame ***\n" );
 }
 
 

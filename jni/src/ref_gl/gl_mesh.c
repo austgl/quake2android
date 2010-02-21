@@ -328,13 +328,6 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 
 	height = -lheight + 0.1f;
 
-	/* stencilbuffer shadows */
-	if (have_stencil && gl_stencilshadow->value) {
-		qglEnable(GL_STENCIL_TEST);
-		qglStencilFunc(GL_EQUAL, 1, 2);
-		qglStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-	}
-
 	while (1)
 	{
 		// get the vertex count and primitive type
@@ -375,9 +368,6 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 		qglEnd ();
 	}
 
-	/* stencilbuffer shadows */
-	if (have_stencil && gl_stencilshadow->value)
-		qglDisable(GL_STENCIL_TEST);
 }
 
 #endif

@@ -52,9 +52,11 @@ char *svc_strings[256] =
 
 void CL_DownloadFileName(char *dest, int destlen, char *fn)
 {
+#ifndef ANDROID
 	if (strncmp(fn, "players", 7) == 0)
 		Com_sprintf (dest, destlen, "%s/%s", BASEDIRNAME, fn);
 	else
+#endif
 		Com_sprintf (dest, destlen, "%s/%s", FS_Gamedir(), fn);
 }
 

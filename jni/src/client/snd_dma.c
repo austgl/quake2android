@@ -652,6 +652,16 @@ if pos is NULL, the sound will be dynamically sourced from the entity
 Entchannel 0 will never override a playing sound
 ====================
 */
+
+static int vibration = 0;
+
+int quake2_jni_get_vibration()
+{
+	int temp = vibration;
+	vibration = 0;
+	return temp;
+}
+
 void S_StartSound(vec3_t origin, int entnum, int entchannel, sfx_t *sfx, float fvol, float attenuation, float timeofs)
 {
 	sfxcache_t	*sc;
@@ -664,7 +674,11 @@ void S_StartSound(vec3_t origin, int entnum, int entchannel, sfx_t *sfx, float f
 
 	if (!sfx)
 		return;
-
+	
+	//Com_Printf ("S_StartSound %s\n", sfx->name);
+	if ( strncmp("*pain",sfx->name,5) == 0 )
+		vibration = 1;	
+	
 	if (sfx->name[0] == '*')
 		sfx = S_RegisterSexedSound(&cl_entities[entnum].current, sfx->name);
 

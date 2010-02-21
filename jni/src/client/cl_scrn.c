@@ -593,6 +593,13 @@ void SCR_BeginLoadingPlaque (void)
 	cls.disable_servercount = cl.servercount;
 }
 
+#ifdef ANDROID
+int quake2_jni_disable_screen()
+{
+	return cls.disable_screen;
+}
+#endif
+
 /*
 ================
 SCR_EndLoadingPlaque
