@@ -109,7 +109,7 @@ public class Quake2 extends Activity
     private String error_message;
     private int overlay = 0;
     
-    public static final String version = "1.8" ;
+    public static final String version = "1.81" ;
     
 	
     /** Called when the activity is first created. */
@@ -377,6 +377,7 @@ public class Quake2 extends Activity
         	            	copy_asset( true, "config.cfg" );						
         	            	copy_asset( true, "overlay1.tga" );
         	            	copy_asset( true, "overlay2.tga" );
+                            copy_asset( true, "overlay3.tga" );
         	            	
         	            	Toast.makeText( context, "configuration restored",  Toast.LENGTH_SHORT)
         	            			.show();
@@ -461,8 +462,9 @@ public class Quake2 extends Activity
     	// check CFG file   
     	// if not present, copy it silently
     	copy_asset( false, "config.cfg" );
-    	copy_asset( false, "overlay1.tga" );
-    	copy_asset( false, "overlay2.tga" );
+    	copy_asset( true, "overlay1.tga" );
+    	copy_asset( true, "overlay2.tga" );
+        copy_asset( true, "overlay3.tga" );
 
     	showDialog(DIALOG_LOADING);
 
@@ -848,11 +850,11 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
   
         	builder.setMessage("Quake2 on Android\n\n"
         			+"Credits :\n\n"
-        			+" Julien Eyriès for initial port, 3D, audio\n\n"
+        			+" Julien Eyries for initial port, 3D, audio\n\n"
         			+" Guillaume Legris for adding controls\n\n"
-        			+" Lukács Péter for the icon\n\n"
+        			+" Lukacs Peter for the icon\n\n"
         			+" Id Software for Quake2 GPL code\n\n"   
-        			+" People at icculus.org for linux patch\n\n"   	
+        			+" People at icculus.org for Linux patch\n\n"   	
         			+" Olli Hinkka for NanoGL\n\n"
         			)
     		       ;
@@ -1147,7 +1149,7 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
         
         
 
-        private List<QuakeButton> overlay1, overlay2 ;
+        private List<QuakeButton> overlay1, overlay2, overlay3 ;
         private QuakeButton current_button = null; // no button down
                 
         public QuakeButton check_buttons( List<QuakeButton> buttons, float tx, float ty )
@@ -1167,19 +1169,33 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
         	 float a,b,c;
         	 
         	 a = 1/3.0f;
-        	 
+
         	 
         	 // KEYBOARD
-        	 overlay1.add( new QuakeButton(   0,   0, a, a, 0 ){
+        	 overlay1.add( new QuakeButton(   0,   0, a, 0.5f*a, 0 ){
         		 @Override
         		 public void press( float x, float y ){
-        			 overlay = (overlay + 1)% 3;
+                     if (overlay==0) overlay=1;
+        			 else overlay=2;
         		 }
         		 @Override
         		 public void release( float x, float y ){
         			 
         		 }
         	 });
+
+        	 overlay1.add( new QuakeButton(   0,   0.5f*a, a, 0.5f*a, 0 ){
+        		 @Override
+        		 public void press( float x, float y ){
+                     if (overlay==0) overlay=1;
+        			 else overlay=3;
+        		 }
+        		 @Override
+        		 public void release( float x, float y ){
+        			 
+        		 }
+        	 });
+
         	 
         	 // CALIBRATE
         	 overlay1.add(  new QuakeButton(   a,   0, a, a, 0 ){
@@ -1237,14 +1253,18 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
         	 
         	 a = 1/10.0f;
         	 b = 1/6.0f;
-        	 
-
-        	
+        	         	
         	 overlay2.add( new QuakeButton( 0*a, 0*b, a, b, K_F1 ));
         	 overlay2.add( new QuakeButton( 1*a, 0*b, a, b, K_F2 ));
         	 overlay2.add( new QuakeButton( 2*a, 0*b, a, b, K_F3 ));
         	 overlay2.add( new QuakeButton( 3*a, 0*b, a, b, K_F4 ));
         	 
+             overlay2.add( new QuakeButton( 0*a, 1*b, a, b, K_LEFTARROW ));
+        	 overlay2.add( new QuakeButton( 1*a, 1*b, a, b, K_RIGHTARROW ));
+        	 overlay2.add( new QuakeButton( 2*a, 1*b, a, b, K_UPARROW ));
+        	 overlay2.add( new QuakeButton( 3*a, 1*b, a, b, K_DOWNARROW ));
+             overlay2.add( new QuakeButton( 4*a, 1*b, a, b, K_ENTER ));
+
         	 overlay2.add( new QuakeButton( 5*a, 0*b, a, b, '0' ));
         	 overlay2.add( new QuakeButton( 6*a, 0*b, a, b, '1' ));
         	 overlay2.add( new QuakeButton( 7*a, 0*b, a, b, '2' ));
@@ -1302,6 +1322,30 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
         			 
         		 }
         	 });        
+
+
+             // D-PAD emulation
+
+             overlay3 = new ArrayList<QuakeButton>();
+        	 
+        	 overlay3.add( new QuakeButton( 0.875f, 0.000f, 0.125f, 0.333f, K_UPARROW ));
+        	 overlay3.add( new QuakeButton( 0.875f, 0.333f, 0.125f, 0.333f, K_ENTER ));
+             overlay3.add( new QuakeButton( 0.875f, 0.667f, 0.125f, 0.333f, K_DOWNARROW ));
+
+             overlay3.add( new QuakeButton( 0.292f, 0.812f, 0.292f, 0.188f, K_LEFTARROW ));
+             overlay3.add( new QuakeButton( 0.583f, 0.812f, 0.292f, 0.188f, K_RIGHTARROW ));
+
+        	 overlay3.add( new QuakeButton( 0.000f, 0.812f, 0.292f, 0.188f, 0 ){
+        		 @Override
+        		 public void press( float x, float y ){
+        			 overlay = 0;
+        		 }
+        		 @Override
+        		 public void release( float x, float y ){
+        			 
+        		 }
+        	 });
+
         }
         
         
@@ -1321,6 +1365,7 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
             	
             	List buttons = overlay1;
             	if (overlay==2) buttons = overlay2;
+                if (overlay==3) buttons = overlay3;
             	current_button = check_buttons(buttons,x,y);           	
             	if ( current_button!=null )            		
             		current_button.press(x, y);
@@ -1529,6 +1574,7 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
     private long vibration_end;
     
     private long tprev = 0;
+    private boolean paused = false;
     
     //// new Renderer interface
 	public void onDrawFrame(GL10 gl) {
@@ -1628,7 +1674,15 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
         if (enable_vibrator)
         	vibration = Quake2GetVibration();
 
-    
+        /*
+        boolean _paused = Quake2Paused() != 0;
+        if ( paused != _paused ){
+            Log.i("Quake2", "Quake2Paused "+_paused);
+            paused = _paused;
+        }
+        */
+        
+
         //Log.i("Quake2", "Quake2Frame done");
 		
         
@@ -1807,7 +1861,7 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
 			int forwardmove, int sidemove, int upmove,
 			float pitch, float yaw, float roll );
     
-    
+    private static native int Quake2Paused();
     
     
     /*----------------------------

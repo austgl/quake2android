@@ -28,3 +28,11 @@ todo : add vibrator
 
 todo : try GestureDetector 
 
+cleanup:
+I/PackageParser(  119): Impliciting adding android.permission.WRITE_EXTERNAL_STORAGE to old pkg com.jeyries.quake2
+I/PackageParser(  119): Impliciting adding android.permission.READ_PHONE_STATE to old pkg com.jeyries.quake2
+
+    [javac] /media/data/julien/projets/quake2android/src/com/jeyries/quake2/Quake2.java:851: warning: unmappable character for encoding ascii
+
+
+

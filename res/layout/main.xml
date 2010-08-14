@@ -40,7 +40,7 @@ android:textColor="#ff0000"
 <TextView
 android:layout_width="wrap_content"
 android:layout_height="wrap_content"
-android:text="Ported to Android by Julien Eyriès (jeyries@gmail.com)"
+android:text="Ported to Android by Julien Eyriès"
 android:textSize="14sp"
 android:layout_x="50px"
 android:layout_y="65px"

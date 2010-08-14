@@ -8,46 +8,31 @@ install subclipse plugin
 
 from eclipse :
 
-add SVN repository http://jeyries-code.svn.beanstalkapp.com/quake2android
+add SVN repository https://quake2android.googlecode.com/svn
 
 checkout trunk as a project in workspace
 
-that'all
-
-### manual way :
-
-### setup path
-
-SRCDIR=/media/data/julien/projets/quake2android
-
-NDKDIR=/media/data/outils/android-ndk-1.6_r1
-
-SVNURL=http://jeyries-code.svn.beanstalkapp.com/quake2android/trunk
-
-### download source code
-
-svn checkout $SVNURL $SRCDIR
 
 
-### setup NDK links
+### OR manual way :
 
+svn checkout https://quake2android.googlecode.com/svn/trunk/ quake2android
 
-ln -s $SRCDIR $NDKDIR/apps/quake2
+cd quake2android
 
+ndk-build V=1
 
-#### build libquake2.so
+android update project -t "android-3" -p .
 
-cd $NDKDIR
-make APP=quake2
+ant install
 
-#### build APK
+### other usefull commands
 
-start eclipse
--> New Android Project
--> create project from existing sources
--> browse to $SRCDIR/application
+ant debug
 
+adb uninstall com.jeyries.quake2
 
-that's it !
+adb install bin/Quake2-debug.apk
+
 
 

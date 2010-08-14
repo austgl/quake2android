@@ -63,6 +63,9 @@ void		GLimp_EndFrame( void )
 	case 2:
 		Draw_StretchPic(0, 0, width, height, "/overlay2.tga");
 		break;
+	case 3:
+		Draw_StretchPic(0, 0, width, height, "/overlay3.tga");
+		break;
 	}
 	
 	
