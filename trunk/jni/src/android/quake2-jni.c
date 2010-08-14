@@ -151,6 +151,44 @@ Java_com_jeyries_quake2_Quake2_Quake2Frame( JNIEnv* env,
     return quake2_jni_get_framecount();
 }
 
+
+
+//Cvar_Set ("paused", "1")
+
+jint EXPORT_ME
+Java_com_jeyries_quake2_Quake2_Quake2Paused( JNIEnv* env,
+                                                  jobject thiz )
+{
+    // from qcommon.h
+//    extern cvar_t *Cvar_Get (char *var_name, char *value, int flags);
+
+    // from cl_main.c
+/*
+    cvar_t	*cl_paused;
+
+	cl_paused = Cvar_Get ("paused", "0", 0);
+*/
+    extern cvar_t	*cl_paused;
+
+// from q_shared.c
+/*
+// nothing outside the Cvar_*() functions should modify these fields!
+typedef struct cvar_s
+{
+	char		*name;
+	char		*string;
+	char		*latched_string;	// for CVAR_LATCH vars
+	int			flags;
+	qboolean	modified;	// set each time the cvar is changed
+	float		value;
+	struct cvar_s *next;
+} cvar_t;
+*/
+
+	return  (cl_paused->value ? 1 : 0);
+}
+
+
 jint EXPORT_ME
 Java_com_jeyries_quake2_Quake2_Quake2Quit( JNIEnv* env,
                                                   jobject thiz )

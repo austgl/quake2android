@@ -1,3 +1,6 @@
+changelist 1.81 :
+- switched to Ant build system
+- new overlay for DPAD emulation (for ex: Samsung Galaxy S)
 
 changelist 1.8 :
 - corrected crash in video menu 

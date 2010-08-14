@@ -45,8 +45,8 @@ LOCAL_CFLAGS :=  \
 
 #LOCAL_LDFLAGS := /media/partage/outils/mydroid/out/target/product/generic/system/lib/libGLESv1_CM.so
 #LOCAL_LDFLAGS += /media/partage/outils/mydroid/out/target/product/generic/symbols/system/lib/libGLESv1_CM.so
-#LOCAL_LDFLAGS += ./apps/quake2/external/libGLESv1_CM.so
-LOCAL_LDFLAGS += ./build/platforms/android-4/arch-arm/usr/lib/libGLESv1_CM.so
+LOCAL_LDFLAGS += ./external/libGLESv1_CM.so
+#LOCAL_LDFLAGS += ./build/platforms/android-4/arch-arm/usr/lib/libGLESv1_CM.so
 #LOCAL_LDLIBS += -lGLESv1_CM
 
 
