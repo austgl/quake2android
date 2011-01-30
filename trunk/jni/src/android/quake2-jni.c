@@ -75,7 +75,20 @@ Java_com_jeyries_quake2_Quake2_Quake2Init( JNIEnv* env,
 
     __android_log_print(ANDROID_LOG_ERROR, "quake2-jni.c", "native code : Quake2Init enter\n");
     __android_log_print(ANDROID_LOG_INFO, "quake2-jni.c", "Quake 2 JNI -- Version %s\n", QUAKE2_JNI_VERSION);
-
+    
+    /* HAVE_NEON is defined in Android.mk ! */
+#ifdef HAVE_NEON
+/*
+    if ((features & ANDROID_CPU_ARM_FEATURE_NEON) == 0) {
+        strlcat(buffer, "CPU doesn't support NEON !\n", sizeof buffer);
+        goto EXIT;
+    }*/
+    __android_log_print(ANDROID_LOG_INFO, "quake2-jni.c", "Program compiled with ARMv7 support !\n");
+#else /* !HAVE_NEON */
+    __android_log_print(ANDROID_LOG_INFO, "quake2-jni.c", "Program *NOT* compiled with ARMv7 support !\n");
+#endif /* !HAVE_NEON */
+   
+    
 	//Cvar_Set("developer","1");
 
 
