@@ -35,6 +35,8 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := quake2
 LOCAL_SRC_FILES := src/android/quake2-jni.c
 
+#TARGET_CPU_ABI   := armeabi-v7a
+
 
 #gcc -Wall -pipe -Dstricmp=strcasecmp -O2 -ffast-math -funroll-loops -falign-loops=2 -falign-jumps=2 -falign-functions=2 -fno-strict-aliasing -DLINUX_VERSION='"3.21+r0.16"' -
 
@@ -42,12 +44,20 @@ LOCAL_CFLAGS :=  \
  -Dstricmp=strcasecmp -DREF_HARD_LINKED -DGAME_HARD_LINKED 
 #LOCAL_CFLAGS += -I/media/partage/outils/mydroid/frameworks/base/opengl/include
 
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+    LOCAL_CFLAGS += -DHAVE_NEON=1
+#    LOCAL_SRC_FILES += helloneon-intrinsics.c.neon
+    LOCAL_ARM_NEON := true
 
+endif
+
+
+   
 #LOCAL_LDFLAGS := /media/partage/outils/mydroid/out/target/product/generic/system/lib/libGLESv1_CM.so
 #LOCAL_LDFLAGS += /media/partage/outils/mydroid/out/target/product/generic/symbols/system/lib/libGLESv1_CM.so
-LOCAL_LDFLAGS += ./external/libGLESv1_CM.so
+#LOCAL_LDFLAGS += ./external/libGLESv1_CM.so
 #LOCAL_LDFLAGS += ./build/platforms/android-4/arch-arm/usr/lib/libGLESv1_CM.so
-#LOCAL_LDLIBS += -lGLESv1_CM
+LOCAL_LDLIBS += -lGLESv1_CM
 
 
 #LOCAL_LDFLAGS += ./build/platforms/android-3/arch-arm/usr/lib/liblog.so
@@ -224,6 +234,9 @@ LOCAL_SRC_FILES += src/android/snd_android.c
 
 
 include $(BUILD_SHARED_LIBRARY)
+
+
+
 
 
 

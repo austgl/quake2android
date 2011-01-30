@@ -109,7 +109,7 @@ public class Quake2 extends Activity
     private String error_message;
     private int overlay = 0;
     
-    public static final String version = "1.81" ;
+    public static final String version = "1.90 beta 1" ;
     
 	
     /** Called when the activity is first created. */
@@ -1726,7 +1726,7 @@ I/Quake2.java(11435): config= EGLConfig rgba=0008 depth=16 stencil=0 native=1 bu
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
 
     	
-    	Log.d("Renderer", "onSurfaceChanged");
+    	Log.d("Renderer", String.format("onSurfaceChanged %dx%d", width,height) );
     	
 
         //AndroidRenderer.renderer.set_gl(gl);
