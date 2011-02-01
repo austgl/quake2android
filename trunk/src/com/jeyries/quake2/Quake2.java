@@ -109,7 +109,7 @@ public class Quake2 extends Activity
     private String error_message;
     private int overlay = 0;
     
-    public static final String version = "1.90 beta 1" ;
+    public static final String version = "1.90" ;
     
 	
     /** Called when the activity is first created. */
