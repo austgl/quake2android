@@ -22,7 +22,7 @@ cd quake2android
 
 ndk-build V=1
 
-android update project -t "android-3" -p .
+android update project -t "android-4" -p .
 
 ant install
 
