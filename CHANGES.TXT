@@ -1,3 +1,10 @@
+changelist 1.91:
+ARMV7 support (FPU)
+minimum SDK is now Android 1.6
+support any screen density
+support multiple screen size
+tested with HTC Desire HD (Android 2.2) and Samsung Galaxy (Android 1.6)
+
 changelist 1.81 :
 - switched to Ant build system
 - new overlay for DPAD emulation (for ex: Samsung Galaxy S)
